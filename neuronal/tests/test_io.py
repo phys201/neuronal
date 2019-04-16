@@ -12,4 +12,5 @@ class TestIo(TestCase):
         self.assertTrue(isinstance(data.data, pd.DataFrame))
         self.assertTrue(isinstance(data.data['T'][0], float))
         self.assertTrue(isinstance(data.data['V'][0], float))
+        self.assertTrue(len(data.data['T']) == 942)
         self.assertTrue(data.num_psp == 1)
