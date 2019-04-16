@@ -30,7 +30,7 @@ def load_data(data_file):
     
     Parameters
     ----------
-    filename: (string) file containing space separated data
+    data_file: (string) file containing space separated data
     """
     data_array = np.loadtxt(data_file)
     return pd.DataFrame(data=data_array.T, columns=['T', 'V'])
