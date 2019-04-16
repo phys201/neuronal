@@ -4,7 +4,6 @@ import pandas as pd
 
 class NeuronalData:
     def __init__(self, data_file, num_psp=1):
-         print(data_file)
          self.data = load_data(data_file)
          self.num_psp = num_psp
 
