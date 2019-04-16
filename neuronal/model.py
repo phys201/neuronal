@@ -16,8 +16,8 @@ def PSP_fit(x, y, nsamples, initial_guess, plot=True):
         Input voltage data in mV
     nsamples : integer
         Number of samples for pymc3 calculation
-    initial_guess : list
-        List of initial guesses for the parameters of the model
+    initial_guess : dictionary
+        Dictionary of initial guesses for the parameters of the model
     plot : boolean
         Plots of the marginal distributions of the estimated parameters (plotted when True)
     """
