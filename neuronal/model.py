@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def PSP_fit(x, y, nsamples, initial_guess, plot=True):
+def psp_fit(x, y, nsamples, initial_guess, plot=True):
     """
     Uses pymc3 to calculate the trace for the PSP model
     
