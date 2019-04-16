@@ -6,7 +6,7 @@ setup(name='neuronal',
       url='https://github.com/phys201/neuronal',
       author='Amelia Paine, Han Sae Jung',
       author_email='apaine@g.harvard.edu, hansaejung@g.harvard.edu',
-      license='GPL',
+      license='GNU GPL v3.0',
       packages=['neuronal'],
       install_requires=[
           'pymc3', 'theano', 'pandas', 'numpy', 'matplotlib' 
