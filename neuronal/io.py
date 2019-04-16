@@ -1,13 +1,37 @@
 import os
 import numpy as np
+import pandas as pd
 
-def loadtxt(filename):
+class NeuronalData:
+    def __init__(self, data_file, num_psp=1):
+         print(data_file)
+         self.data = load_data(data_file)
+         self.num_psp = num_psp
+
+def get_example_data_file_path(filename, data_dir='data'):
+    '''
+    Gets file path of example data file (in neuronal/data/ or other
+    specified directory), independent of operating system.
+
+    -- Parameters --
+    filename: (string) name of example data file
+    data_dir: (string, opt) directory containing example data
+
+    -- Returns --
+    (string) absolute path of example data file
+    '''
+    start = os.path.abspath(__file__)
+    start_dir = os.path.dirname(start)
+    data_dir = os.path.join(start_dir, data_dir)
+    return os.path.join(start_dir, data_dir, filename)
+
+def load_data(data_file):
     """
-    Load txt data
+    Load data into a DataFrame
     
     Parameters
     ----------
-    filename : string
-        txt file
+    filename: (string) file containing space separated data
     """
-    return np.loadtxt(filename)
+    data_array = np.loadtxt(data_file)
+    return pd.DataFrame(data=data_array.T, columns=['T', 'V'])
