@@ -10,4 +10,4 @@ def loadtxt(filename):
     filename : string
         txt file
     """
-  return np.loadtxt(filename)
+    return np.loadtxt(filename)
