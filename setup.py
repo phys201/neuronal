@@ -9,6 +9,12 @@ setup(name='neuronal',
       license='GNU GPL v3.0',
       packages=['neuronal'],
       install_requires=[
-          'pymc3', 'theano', 'pandas', 'numpy', 'matplotlib' 
+          'pymc3', 
+	  'theano', 
+	  'pandas', 
+	  'numpy', 
+	  'matplotlib', 
       ],
+      test_suite='nose.collector',
+      tests_require=['nose'],
       zip_safe=False)
