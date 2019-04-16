@@ -8,4 +8,7 @@ setup(name='neuronal',
       author_email='apaine@g.harvard.edu, hansaejung@g.harvard.edu',
       license='GPL',
       packages=['neuronal'],
+      install_requires=[
+          'pymc3', 'theano', 'pandas', 'numpy', 'matplotlib' 
+      ],
       zip_safe=False)
