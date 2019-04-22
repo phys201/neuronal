@@ -4,6 +4,28 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+def psp_log_likelihood(data, theta):
+    """
+    Calculates log likelihood for a single psp assuming constant baseline
+    
+    Parameters
+    ----------
+    data : NeuronalData
+        Imported data
+    theta : list
+        List of the parameters of the model
+    """
+    b, sigma, a1, t1, tau_d1, tau_r1 = theta
+            
+    single_psp_model = (x >= t1) * a1 * (np.exp(-(x-t1) / tau_d1) - np.exp(-(x-t1) / tau_r1)) + b
+        
+    residual = ((y - single_psp_model / sigma)**2
+    constant = 1 / np.sqrt(2*np.pi*sigma**2)
+    log_likelihood = (np.log(constant) - 0.5 * residual).sum()
+    if not np.isfinite(log_likelihood):
+        return -np.inf
+    return log_likelihood
+
 def psp_fit(data, nsamples, initial_guess, plot=True):
     """
     Uses pymc3 to calculate the trace for the PSP model. In this particular model, we assume a single PSP peak and
