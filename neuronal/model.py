@@ -21,7 +21,7 @@ def psp_log_likelihood(data, theta):
             
     single_psp_model = (t >= t1) * a1 * (np.exp(-(t-t1) / tau_d1) - np.exp(-(t-t1) / tau_r1)) + b
         
-    residual = ((v - single_psp_model / sigma)**2
+    residual = ((v - single_psp_model) / sigma)**2
     constant = 1 / np.sqrt(2*np.pi*sigma**2)
     log_likelihood = (np.log(constant) - 0.5 * residual).sum()
     if not np.isfinite(log_likelihood):
