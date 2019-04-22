@@ -16,10 +16,12 @@ def psp_log_likelihood(data, theta):
         List of the parameters of the model
     """
     b, sigma, a1, t1, tau_d1, tau_r1 = theta
+    t = np.array(data.data['T'])
+    v = np.array(data.data['V'])
             
-    single_psp_model = (x >= t1) * a1 * (np.exp(-(x-t1) / tau_d1) - np.exp(-(x-t1) / tau_r1)) + b
+    single_psp_model = (t >= t1) * a1 * (np.exp(-(t-t1) / tau_d1) - np.exp(-(t-t1) / tau_r1)) + b
         
-    residual = ((y - single_psp_model / sigma)**2
+    residual = ((v - single_psp_model / sigma)**2
     constant = 1 / np.sqrt(2*np.pi*sigma**2)
     log_likelihood = (np.log(constant) - 0.5 * residual).sum()
     if not np.isfinite(log_likelihood):
