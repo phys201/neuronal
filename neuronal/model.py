@@ -28,7 +28,7 @@ def psp_log_likelihood(data, theta):
         return -np.inf
     return log_likelihood
 
-def psp_fit(data, nsamples, initial_guess, plot=True, seed=None):
+def psp_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500):
     """
     Uses pymc3 to calculate the trace for the PSP model. In this particular model, we assume a single PSP peak and
     a constant baseline.
@@ -60,7 +60,7 @@ def psp_fit(data, nsamples, initial_guess, plot=True, seed=None):
         loglike = pm.Normal.dist(mu=model, sd=sigma).logp(v)
         pm.Potential('result', loglike)
         
-        trace=pm.sample(nsamples, cores=2, start=initial_guess, random_seed=seed)
+        trace=pm.sample(nsamples, cores=2, start=initial_guess, random_seed=seed, tune=tune)
 
     if plot:
         pm.traceplot(trace)
