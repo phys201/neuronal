@@ -16,7 +16,7 @@ class TestModel(TestCase):
                          'tau_d1': 0.01, 
                          'tau_r1': 0.001
                         }
-        sample = psp_fit(data, 1000, initial_guess, plot=False)
+        sample = psp_fit(data, 5, initial_guess, plot=False, seed=42, tune=10)
         summary = pm.summary(sample)['mean']
         b = summary['b']
         a1 = summary['a1']
@@ -24,6 +24,8 @@ class TestModel(TestCase):
         t1 = summary['t1']
         tau_d1 = summary['tau_d1']
         tau_r1 = summary['tau_r1']
-        self.assertTrue((b < -30.38) and (b > -30.42))
-        self.assertTrue((t1 < 451.44) and (t1 > 451.42))
-        self.assertTrue((sigma < 0.024) and (sigma > 0.023))
+        print(b, a1, sigma, t1)
+        self.assertAlmostEqual(b, -30.387490320942778)
+        self.assertAlmostEqual(a1, 0.30088890597428075)
+        self.assertAlmostEqual(sigma, 0.80651278277974)
+        self.assertAlmostEqual(t1, 451.43077112986083)
