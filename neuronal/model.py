@@ -77,10 +77,8 @@ def psp3_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500):
     
     Parameters
     ----------
-    x : array
-        Input time data in seconds
-    y : array
-        Input voltage data in mV
+    data : NeuronalData
+        Imported data
     nsamples : integer
         Number of samples for pymc3 calculation
     initial_guess : dictionary
