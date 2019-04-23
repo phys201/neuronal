@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import pymc3 as pm
 
-def plot_fit(data, sample, psp1=False, psp3=False):
+def plot_fit(data, sample):
     """
     Plots a selected model
     Parameters
@@ -20,14 +20,14 @@ def plot_fit(data, sample, psp1=False, psp3=False):
     t = np.array(data.data['T'])
     v = np.array(data.data['V'])
     summary = pm.summary(sample)
-    if psp1:
-        b, a1, sigma, t1, tau_d1, tau_r1 = summary['mean']
-        model = (t >= t1) * a1 * (np.exp(-(t-t1) / tau_d1) - np.exp(-(t-t1) / tau_r1)) + b
-    elif psp3:
-        b, a1, a2, a3, sigma, t1, tau_d1, tau_r1, t2, tau_d2, tau_r2, t3, tau_d3, tau_r3 = summary['mean']
-        model = (t >= t1) * a1 * (np.exp(-(t-t1) / tau_d1) - np.exp(-(t-t1) / tau_r1)) + b +\
-                (t >= t2) * a2 * (np.exp(-(t-t2) / tau_d2) - np.exp(-(t-t2) / tau_r2)) +\
-                (t >= t3) * a3 * (np.exp(-(t-t3) / tau_d3) - np.exp(-(t-t3) / tau_r3))
+    if data.num_psp == 1:
+        b, a0, sigma, t_psp0, tau_d0, tau_r0 = summary['mean']
+        model = (t >= t_psp0) * a0 * (np.exp(-(t-t_psp0) / tau_d0) - np.exp(-(t-t_psp0) / tau_r0)) + b
+    elif data.num_psp == 3:
+        b, a0, a1, a2, sigma, t_psp0, tau_d0, tau_r0, t_psp1, tau_d1, tau_r1, t_psp2, tau_d2, tau_r2 = summary['mean']
+        model = (t >= t_psp0) * a0 * (np.exp(-(t-t_psp0) / tau_d0) - np.exp(-(t-t_psp0) / tau_r0)) + b +\
+                (t >= t_psp1) * a1 * (np.exp(-(t-t_psp1) / tau_d1) - np.exp(-(t-t_psp1) / tau_r1)) +\
+                (t >= t_psp2) * a2 * (np.exp(-(t-t_psp2) / tau_d2) - np.exp(-(t-t_psp2) / tau_r2))
     plt.plot(t, v)
     plt.plot(t, model, c='r')
     plt.title('Estimated Fit from the Model')
