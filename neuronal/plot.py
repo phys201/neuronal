@@ -12,10 +12,6 @@ def plot_fit(data, sample):
         Imported data
     sample : pymc3.backends.base.MultiTrace
         Result from pymc3 calculation
-    psp1 : boolean
-        Model psp_fit (single psp signal)
-    psp3 : boolean
-        Model psp3_fit (three psp signals)
     """
     t = np.array(data.data['T'])
     v = np.array(data.data['V'])
