@@ -50,20 +50,23 @@ def psp_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500):
     """
     
     with pm.Model() as PSP_model:
+        num_psp = data.num_psp
+
         t = np.array(data.data['T'])
         v = np.array(data.data['V'])
-        
+
+        # Set parameter ranges
         b = pm.Flat('b')
         sigma = pm.HalfFlat('sigma')
-        a1 = pm.Flat('a1')
-        t1 = pm.Uniform('t1', lower=np.min(t), upper=np.max(t))
-        tau_d1 = pm.Uniform('tau_d1', lower=0, upper=0.1)
-        tau_r1 = pm.Uniform('tau_r1', lower=0, upper=0.1)
+        a = [pm.Flat('a' + str(i)) for i in range(num_psp)]
+        t_psp = [pm.Uniform('t_psp' + str(i), lower=np.min(t), upper=np.max(t)) for i in range(num_psp)]
+        tau_d = [pm.Uniform('tau_d' + str(i), lower=0, upper=0.1) for i in range(num_psp)]
+        tau_r = [pm.Uniform('tau_r' + str(i), lower=0, upper=0.1) for i in range(num_psp)]
         
-        model = (t >= t1) * a1 * (tt.exp(-(t-t1) / tau_d1) - tt.exp(-(t-t1) / tau_r1)) + b
+        model = b + np.sum(
+            [(t >= t_psp[i]) * a[i] * (tt.exp(-(t-t_psp[i]) / tau_d[i]) - tt.exp(-(t-t_psp[i]) / tau_r[i])) for i in range(num_psp)])
         loglike = pm.Normal.dist(mu=model, sd=sigma).logp(v)
         pm.Potential('result', loglike)
-        
         trace=pm.sample(nsamples, cores=2, start=initial_guess, random_seed=seed, tune=tune)
 
     if plot:
