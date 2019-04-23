@@ -31,10 +31,15 @@ def psp_log_likelihood(data, b, sigma, a, t_psp, tau_d, tau_r):
         Log-likelihood of parameters
     """
     num_psp = data.num_psp
+
+    if any(len(x) != num_psp for x in [a, t_psp, tau_d, tau_r]):
+        raise ValueError('Number of parameters is inconsistent with data.num_psp. Make sure num_psp is set '
+                         'and that a, t_psp, tau_d, and tau_r are the correct length.')
+
     t = np.array(data.data['T'])
     v = np.array(data.data['V'])
 
-    # TODO: numpy broadcasting?
+    # TODO: broadcasting?
     model = b + np.sum(
         [(t >= t_psp[i]) * a[i] * (tt.exp(-(t - t_psp[i]) / tau_d[i]) - tt.exp(-(t - t_psp[i]) / tau_r[i]))
          for i in range(num_psp)])
