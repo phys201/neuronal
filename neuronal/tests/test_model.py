@@ -6,6 +6,13 @@ from neuronal.io import get_example_data_file_path, NeuronalData
 from neuronal.model import *
 
 class TestModel(TestCase):
+    def test_likelihood(self):
+        example_file_path = get_example_data_file_path('single_PSP_data.txt')
+        data = NeuronalData(example_file_path)
+        theta = [-30.397304, 0.291054, 0.023289, 451.427929, 0.015955, 0.002622]
+        likelihood = psp_log_likelihood(data, theta)
+        self.assertAlmostEqual(likelihood, 275.11937598924055)
+
     def test_single_psp(self):
         example_file_path = get_example_data_file_path('single_PSP_data.txt')
         data = NeuronalData(example_file_path)
@@ -29,3 +36,8 @@ class TestModel(TestCase):
         self.assertAlmostEqual(a1, 0.30088890597428075)
         self.assertAlmostEqual(sigma, 0.80651278277974)
         self.assertAlmostEqual(t1, 451.43077112986083)
+
+    def test_multi_psp(self):
+        example_file_path = get_example_data_file_path('three_PSP_data.txt')
+        data = NeuronalData(example_file_path)
+
