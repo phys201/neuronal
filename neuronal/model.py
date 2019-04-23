@@ -43,6 +43,10 @@ def psp_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500):
         Dictionary of initial guesses for the parameters of the model
     plot : boolean
         Plots of the marginal distributions of the estimated parameters (plotted when True)
+    seed : int or list of ints, optional
+        Random seed for pymc3 sampling, defaults to None
+    tune : int
+        Number of iterations to tune in pymc3 sampling, defaults to 500
     """
     
     with pm.Model() as PSP_model:
