@@ -27,7 +27,7 @@ def psp_log_likelihood(data, b, sigma, a, t_psp, tau_d, tau_r):
 
     Returns
     -------
-    log_likelihood : float
+    log_likelihood : TensorVariable
         Log-likelihood of parameters
     """
     num_psp = data.num_psp
