@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import pymc3 as pm
 
 def plot_fit(data, sample, psp1=False, psp3=False):
     """
