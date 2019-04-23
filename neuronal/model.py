@@ -66,7 +66,7 @@ def psp_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500):
         pm.traceplot(trace)
     return trace
 
-def psp3_fit(x, y, nsamples, initial_guess, plot=True):
+def psp3_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500):
     """
     Uses pymc3 to calculate the trace for the PSP model. In this particular model, we assume three PSP peaks and
     a constant baseline.
@@ -85,6 +85,9 @@ def psp3_fit(x, y, nsamples, initial_guess, plot=True):
         Plots of the marginal distributions of the estimated parameters (plotted when True)
     """
     with pm.Model() as PSP_model:
+        t = np.array(data.data['T'])
+        v = np.array(data.data['V'])
+        
         b = pm.Flat('b')
         sigma = pm.HalfFlat('sigma')
         a1 = pm.Flat('a1')
@@ -100,10 +103,10 @@ def psp3_fit(x, y, nsamples, initial_guess, plot=True):
         tau_d3 = pm.Uniform('tau_d3', lower=0, upper=0.1)
         tau_r3 = pm.Uniform('tau_r3', lower=0, upper=0.1)
         
-        model = (x >= t1) * a1 * (tt.exp(-(x-t1) / tau_d1) - tt.exp(-(x-t1) / tau_r1)) + b +\
-                (x >= t2) * a2 * (tt.exp(-(x-t2) / tau_d2) - tt.exp(-(x-t2) / tau_r2)) +\
-                (x >= t3) * a3 * (tt.exp(-(x-t3) / tau_d3) - tt.exp(-(x-t3) / tau_r3))
-        loglike = pm.Normal.dist(mu=model, sd=sigma).logp(y)
+        model = (t >= t1) * a1 * (tt.exp(-(t-t1) / tau_d1) - tt.exp(-(t-t1) / tau_r1)) + b +\
+                (t >= t2) * a2 * (tt.exp(-(t-t2) / tau_d2) - tt.exp(-(t-t2) / tau_r2)) +\
+                (t >= t3) * a3 * (tt.exp(-(t-t3) / tau_d3) - tt.exp(-(t-t3) / tau_r3))
+        loglike = pm.Normal.dist(mu=model, sd=sigma).logp(v)
         pm.Potential('result', loglike)
         
         trace=pm.sample(nsamples, cores=2, start=initial_guess)
