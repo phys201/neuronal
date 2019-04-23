@@ -4,28 +4,43 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def psp_log_likelihood(data, theta):
+def psp_log_likelihood(data, b, sigma, a, t_psp, tau_d, tau_r):
     """
     Calculates log likelihood for a single psp assuming constant baseline
     
     Parameters
     ----------
     data : NeuronalData
-        Imported data
-    theta : list
-        List of the parameters of the model
+        Experimental data
+    b : float
+        Constant baseline value
+    sigma : float
+        Width of Gaussian noise
+    a : list of float
+        amplitudes of PSPs
+    t_psp : list of float
+        PSP start times
+    tau_d : list of float
+        Decay constants (PSP long-range behavior)
+    tau_r : lost of float
+        Rise constants (PSP short-range behavior)
+
+    Returns
+    -------
+    log_likelihood : float
+        Log-likelihood of parameters
     """
-    b, sigma, a1, t1, tau_d1, tau_r1 = theta
+    num_psp = data.num_psp
     t = np.array(data.data['T'])
     v = np.array(data.data['V'])
-            
-    single_psp_model = (t >= t1) * a1 * (np.exp(-(t-t1) / tau_d1) - np.exp(-(t-t1) / tau_r1)) + b
-        
-    residual = ((v - single_psp_model) / sigma)**2
-    constant = 1 / np.sqrt(2*np.pi*sigma**2)
+
+    # TODO: numpy broadcasting?
+    model = b + np.sum(
+        [(t >= t_psp[i]) * a[i] * (tt.exp(-(t - t_psp[i]) / tau_d[i]) - tt.exp(-(t - t_psp[i]) / tau_r[i]))
+         for i in range(num_psp)])
+    residual = ((v - model) / sigma) ** 2
+    constant = 1 / np.sqrt(2 * np.pi * sigma ** 2)
     log_likelihood = (np.log(constant) - 0.5 * residual).sum()
-    if not np.isfinite(log_likelihood):
-        return -np.inf
     return log_likelihood
 
 def psp_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500):
@@ -47,14 +62,16 @@ def psp_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500):
         Random seed for pymc3 sampling, defaults to None
     tune : int
         Number of iterations to tune in pymc3 sampling, defaults to 500
+
+    Returns
+    -------
+    trace : pymc3.backends.base.MultiTrace
+        A MultiTrace object containing the samples
     """
     
     with pm.Model() as PSP_model:
         num_psp = data.num_psp
-
-        t = np.array(data.data['T'])
-        v = np.array(data.data['V'])
-
+        t = data.data['T']
         # Set parameter ranges
         b = pm.Flat('b')
         sigma = pm.HalfFlat('sigma')
@@ -62,11 +79,9 @@ def psp_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500):
         t_psp = [pm.Uniform('t_psp' + str(i), lower=np.min(t), upper=np.max(t)) for i in range(num_psp)]
         tau_d = [pm.Uniform('tau_d' + str(i), lower=0, upper=0.1) for i in range(num_psp)]
         tau_r = [pm.Uniform('tau_r' + str(i), lower=0, upper=0.1) for i in range(num_psp)]
-        
-        model = b + np.sum(
-            [(t >= t_psp[i]) * a[i] * (tt.exp(-(t-t_psp[i]) / tau_d[i]) - tt.exp(-(t-t_psp[i]) / tau_r[i])) for i in range(num_psp)])
-        loglike = pm.Normal.dist(mu=model, sd=sigma).logp(v)
-        pm.Potential('result', loglike)
+
+        log_likelihood = psp_log_likelihood(data, b, sigma, a, t_psp, tau_d, tau_r)
+        pm.Potential('result', log_likelihood)
         trace=pm.sample(nsamples, cores=2, start=initial_guess, random_seed=seed, tune=tune)
 
     if plot:
