@@ -20,7 +20,7 @@ def plot_fit(data, sample):
         b, a0, sigma, t_psp0, tau_d0, tau_r0 = summary['mean']
         model = (t >= t_psp0) * a0 * (np.exp(-(t-t_psp0) / tau_d0) - np.exp(-(t-t_psp0) / tau_r0)) + b
     elif data.num_psp == 3:
-        b, a0, a1, a2, sigma, t_psp0, tau_d0, tau_r0, t_psp1, tau_d1, tau_r1, t_psp2, tau_d2, tau_r2 = summary['mean']
+        b, a0, a1, a2, sigma, t_psp0, t_psp1, t_psp2, tau_d0, tau_d1, tau_d2, tau_r0, tau_r1, tau_r2 = summary['mean']
         model = (t >= t_psp0) * a0 * (np.exp(-(t-t_psp0) / tau_d0) - np.exp(-(t-t_psp0) / tau_r0)) + b +\
                 (t >= t_psp1) * a1 * (np.exp(-(t-t_psp1) / tau_d1) - np.exp(-(t-t_psp1) / tau_r1)) +\
                 (t >= t_psp2) * a2 * (np.exp(-(t-t_psp2) / tau_d2) - np.exp(-(t-t_psp2) / tau_r2))
