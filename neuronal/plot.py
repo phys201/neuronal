@@ -1,11 +1,18 @@
+"""
+Convenient functions for plotting data and best fit.
+
+Authors: Amelia Paine, Han Sae Jung
+"""
+
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 import pymc3 as pm
 
+
 def plot_fit(data, sample):
     """
-    Plots a selected model
+    Plots data and best fit from parameter estimation
+
     Parameters
     ----------
     data : NeuronalData

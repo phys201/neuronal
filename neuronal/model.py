@@ -1,8 +1,13 @@
+"""
+Uses a generative model to fit parameters to neuronal data.
+
+Authors: Amelia Paine, Han Sae Jung
+"""
+
 import theano.tensor as tt
 import pymc3 as pm
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
+
 
 def psp_log_likelihood(data, b, sigma, a, t_psp, tau_d, tau_r):
     """
@@ -48,6 +53,7 @@ def psp_log_likelihood(data, b, sigma, a, t_psp, tau_d, tau_r):
     log_likelihood = (np.log(constant) - 0.5 * residual).sum()
     return log_likelihood
 
+
 def psp_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500):
     """
     Uses pymc3 to calculate the trace for the PSP model. In this particular model, we assume a single PSP peak and
@@ -57,13 +63,13 @@ def psp_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500):
     ----------
     data : NeuronalData
         Imported data
-    nsamples : integer
+    nsamples : int
         Number of samples for pymc3 calculation
-    initial_guess : dictionary
+    initial_guess : dict
         Dictionary of initial guesses for the parameters of the model
     plot : boolean
         Plots of the marginal distributions of the estimated parameters (plotted when True)
-    seed : int or list of ints, optional
+    seed : int or list of int, optional
         Random seed for pymc3 sampling, defaults to None
     tune : int
         Number of iterations to tune in pymc3 sampling, defaults to 500
