@@ -115,7 +115,7 @@ def psp3_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500):
         loglike = pm.Normal.dist(mu=model, sd=sigma).logp(v)
         pm.Potential('result', loglike)
         
-        trace=pm.sample(nsamples, cores=2, start=initial_guess)
+        trace=pm.sample(nsamples, cores=2, start=initial_guess, random_seed=seed, tune=tune)
 
     if plot:
         pm.traceplot(trace)
