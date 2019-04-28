@@ -23,25 +23,26 @@ def plot_fit(data, sample):
     t = np.array(data.data['T'])
     v = np.array(data.data['V'])
     summary = pm.summary(sample)
-    if data.num_psp == 1:
-        [b_start, b0, b_end, a0, sigma, t_psp0, tau_d0, tau_r0] = summary_test['mean']
+    num_psp = data.num_psp
+    if num_psp == 1:
+        [b_start, b0, b_end, a0, sigma, t_psp0, tau_d0, tau_r0] = summary['mean']
         t_psp = np.array([t_psp0])
         b = np.array([b0])
         a = np.array([a0])
         tau_d = np.array([tau_d0])
         tau_r = np.array([tau_r0])
         
-    elif data.num_psp == 2:
-        [b_start, b0, b1, b_end, a0, a1, sigma, t_psp0, t_psp1, tau_d0, tau_d1, tau_r0, tau_r1] = summary_test['mean']
+    elif num_psp == 2:
+        [b_start, b0, b1, b_end, a0, a1, sigma, t_psp0, t_psp1, tau_d0, tau_d1, tau_r0, tau_r1] = summary['mean']
         t_psp = np.array([t_psp0, t_psp1])
         b = np.array([b0, b1])
         a = np.array([a0, a1])
         tau_d = np.array([tau_d0, tau_d1])
         tau_r = np.array([tau_r0, tau_r1])
 
-    elif data.num_psp == 3:
+    elif num_psp == 3:
         [b_start, b0, b1, b2, b_end, a0, a1, a2, sigma, 
-         t_psp0, t_psp1, t_psp2, tau_d0, tau_d1, tau_d2, tau_r0, tau_r1, tau_r2] = summary_test['mean']
+         t_psp0, t_psp1, t_psp2, tau_d0, tau_d1, tau_d2, tau_r0, tau_r1, tau_r2] = summary['mean']
         t_psp = np.array([t_psp0, t_psp1, t_psp2])
         b = np.array([b0, b1, b2])
         a = np.array([a0, a1, a2])
