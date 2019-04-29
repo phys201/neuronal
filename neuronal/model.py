@@ -130,6 +130,9 @@ def psp_model(data, b_start, b, b_end, sigma, a, t_psp, tau_d, tau_r):
     model : Numpy Array
         PSP model of the given parameters
     """
+    num_psp = data.num_psp
+    t = np.array(data.data['T'])
+    
     #needs to be vectorized
     model = (t <= t_psp[0]) * (b_start + (b[0] - b_start) / (t_psp[0] - t[0]) * (t - t[0])) +\
             np.sum([
@@ -170,9 +173,6 @@ def psp_log_likelihood(data, b_start, b, b_end, sigma, a, t_psp, tau_d, tau_r):
     log_likelihood : float
         Log-likelihood of parameters
     """
-    num_psp = data.num_psp
-
-    t = np.array(data.data['T'])
     v = np.array(data.data['V'])
     
     model = psp_model(data, b_start, b, b_end, sigma, a, t_psp, tau_d, tau_r)
