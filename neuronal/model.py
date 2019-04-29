@@ -7,6 +7,7 @@ Authors: Amelia Paine, Han Sae Jung
 import theano.tensor as tt
 import pymc3 as pm
 import numpy as np
+import warnings
 
 
 #def psp_log_likelihood(data, b, sigma, a, t_psp, tau_d, tau_r):
@@ -152,10 +153,20 @@ def psp_log_likelihood(data, b_start, b, b_end, sigma, a, t_psp, tau_d, tau_r):
     log_likelihood = (np.log(constant) - 0.5 * residual).sum()
     return log_likelihood
 
+
 def psp_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500):
     """
-    Uses pymc3 to calculate the trace for the PSP model. In this particular model, we assume piecewise, linearly varying
-    baselines
+    Uses pymc3 to calculate the trace for the PSP model. We assume a piecewise, linearly varying baseline.
+
+    Keys for initial_guess (for n PSPs)
+    -----------------------------------
+    b_start, b_end : start and end baseline values
+    b : (list) baseline values at each PSP start
+    sigma : width of Gaussian noise
+    a : (list) amplitude of each PSP
+    t_psp : (list) start time for each PSP
+    tau_d : (list) decay time constant of each PSP
+    tau_r : (list) rise time constant of each PSP
     
     Parameters
     ----------
@@ -177,7 +188,9 @@ def psp_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500):
     trace : pymc3.backends.base.MultiTrace
         A MultiTrace object containing the samples
     """
-    
+
+    validate_params(data, initial_guess)
+
     with pm.Model() as PSP_model:
         num_psp = data.num_psp
         t = data.data['T']
@@ -198,3 +211,32 @@ def psp_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500):
     if plot:
         pm.traceplot(trace)
     return trace
+
+
+def validate_params(data, params):
+    """
+    Checks if a certain dictionary of parameters is appropriate for describing the given data
+
+    Parameters
+    ----------
+    data : NeuronalData
+        Imported data
+    params : dict
+        Dictionary of parameters of the model
+    """
+    num_psp = data.num_psp
+    keys = params.keys()
+    expected_keys = ['b_start', 'b_end', 'b', 'sigma', 'a', 't_psp', 'tau_d', 'tau_r']
+    for key in expected_keys:
+        if key not in keys:
+            warnings.warn('Missing parameter ' + key)
+    for key in keys:
+        if key not in expected_keys:
+            warnings.warn('Unexpected parameter ' + key)
+    for key in ['b', 'a', 't_psp', 'tau_d', 'tau_r']:
+        if key in keys:
+            if not isinstance(params[key], list):
+                warnings.warn('Incorrect parameter type: ' + key + ' is ' + str(type(params[key]) + ', should be list'))
+            elif len(params[key]) != num_psp:
+                warnings.warn('Length of list ' + key + ' inconsistent with num_psp')
+
