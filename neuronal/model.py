@@ -132,14 +132,10 @@ def psp_log_likelihood(data, b_start, b, b_end, sigma, a, t_psp, tau_d, tau_r):
     """
     num_psp = data.num_psp
 
-    #if any(len(x) != num_psp for x in [a, t_psp, tau_d, tau_r]):
-    #    raise ValueError('Number of parameters is inconsistent with data.num_psp. Make sure num_psp is set '
-    #                     'and that a, t_psp, tau_d, and tau_r are the correct length.')
-
     t = np.array(data.data['T'])
     v = np.array(data.data['V'])
     
-    #needs to be vectorized
+    # needs to be vectorized
     model = (t <= t_psp[0]) * (b_start + (b[0] - b_start) / (t_psp[0] - t[0]) * (t - t[0])) +\
             np.sum([
                     (t >= t_psp[i]) * (a[i] * (np.exp(-(t-t_psp[i]) / tau_d[i]) - np.exp(-(t-t_psp[i]) / tau_r[i])) +\
@@ -154,7 +150,7 @@ def psp_log_likelihood(data, b_start, b, b_end, sigma, a, t_psp, tau_d, tau_r):
     return log_likelihood
 
 
-def psp_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500):
+def psp_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500, suppress_warnings=False):
     """
     Uses pymc3 to calculate the trace for the PSP model. We assume a piecewise, linearly varying baseline.
 
@@ -180,16 +176,18 @@ def psp_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500):
         Plots of the marginal distributions of the estimated parameters (plotted when True)
     seed : int or list of int, optional
         Random seed for pymc3 sampling, defaults to None
-    tune : int
+    tune : int, optional
         Number of iterations to tune in pymc3 sampling, defaults to 500
+    suppress_warnings : bool, optional
+        Hide warnings if initial guess doesn't look right
 
     Returns
     -------
     trace : pymc3.backends.base.MultiTrace
         A MultiTrace object containing the samples
     """
-
-    validate_params(data, initial_guess)
+    if not suppress_warnings:
+        validate_params(data, initial_guess)
 
     with pm.Model() as PSP_model:
         num_psp = data.num_psp
