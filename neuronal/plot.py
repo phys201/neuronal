@@ -8,21 +8,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pymc3 as pm
 
-
-def plot_fit(data, sample):
+def psp_model(data, summary):
     """
-    Plots data and best fit from parameter estimation
+    Returns a psp_model for a given summary calculated from a pymc3 calculation 
 
     Parameters
     ----------
     data : NeuronalData
         Imported data
-    sample : pymc3.backends.base.MultiTrace
-        Result from pymc3 calculation
+    summary : Pandas DataFrame
+        Summary of the result from pymc3 calculation
     """
     t = np.array(data.data['T'])
     v = np.array(data.data['V'])
-    summary = pm.summary(sample)
     num_psp = data.num_psp
     if num_psp == 1:
         [b_start, b0, b_end, a0, sigma, t_psp0, tau_d0, tau_r0] = summary['mean']
@@ -56,9 +54,30 @@ def plot_fit(data, sample):
                     for i in range(num_psp - 1)], axis=0) +\
             (t >= t_psp[-1]) * (a[-1] * (np.exp(-(t-t_psp[-1]) / tau_d[-1]) - np.exp(-(t-t_psp[-1]) / tau_r[-1])) +\
             (b[-1] + (b_end - b[-1]) / (t[-1] - t_psp[-1]) * (t - t_psp[-1])))
-    plt.plot(t, v)
-    plt.plot(t, model, c='r')
-    plt.title('Estimated Fit from the Model')
-    plt.xlabel('Time (s)')
-    plt.ylabel('Voltage (mV)')
+    return model
+
+def plot_fit(data, summary):
+    """
+    Plots the data and the best fit from psp_model using a summary calculated from pymc3 and
+    returns 'matplotlib.axes._subplots.AxesSubplot' object
+
+    Parameters
+    ----------
+    data : NeuronalData
+        Imported data
+    summary : Pandas DataFrame
+        Summary of the result from pymc3 calculation
+    """
+    t = np.array(data.data['T'])
+    v = np.array(data.data['V'])
+    model = psp_model(data, summary)
+    
+    fig = plt.figure()
+    ax = fig.gca()
+    ax.plot(t, v)
+    ax.plot(t, model, c='r')
+    ax.set_title('Estimated Fit from the Model')
+    ax.set_xlabel('Time (s)')
+    ax.set_ylabel('Voltage (mV)')
     plt.show()
+    return ax
