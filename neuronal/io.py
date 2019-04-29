@@ -17,6 +17,8 @@ class NeuronalData:
         """
         Initialize NeuronalData object
 
+        Data should be space-separated values. First row is time (in seconds) and second row is signal (in millivolts).
+
         Parameters
         ----------
         data_file : str
