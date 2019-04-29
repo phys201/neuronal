@@ -2,7 +2,7 @@ from unittest import TestCase
 from neuronal.io import get_example_data_file_path, NeuronalData
 from neuronal.model import *
 import warnings
-
+import pymc3 as pm
 
 class TestModel(TestCase):
     def test_model(self):
@@ -84,3 +84,4 @@ class TestModel(TestCase):
             warn = True
         finally:
             self.assertTrue(warn)
+        warnings.resetwarnings()

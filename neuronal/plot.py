@@ -56,7 +56,8 @@ def psp_model_for_plot(data, summary):
             (b[-1] + (b_end - b[-1]) / (t[-1] - t_psp[-1]) * (t - t_psp[-1])))
     return model
 
-def plot_fit(data, summary):
+
+def plot_fit(data, summary, show_plot=True):
     """
     Plots the data and the best fit from psp_model using a summary calculated from pymc3 and
     returns 'matplotlib.axes._subplots.AxesSubplot' object
@@ -79,5 +80,6 @@ def plot_fit(data, summary):
     ax.set_title('Estimated Fit from the Model')
     ax.set_xlabel('Time (s)')
     ax.set_ylabel('Voltage (mV)')
-    plt.show()
+    if show_plot:
+        plt.show()
     return ax
