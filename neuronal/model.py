@@ -236,7 +236,7 @@ def validate_params(data, params):
     for key in ['b', 'a', 't_psp', 'tau_d', 'tau_r']:
         if key in keys:
             if not isinstance(params[key], list):
-                warnings.warn('Incorrect parameter type: ' + key + ' is ' + str(type(params[key]) + ', should be list'))
+                warnings.warn('Incorrect parameter type: ' + key + ' is ' + str(type(params[key])) + ', should be list')
             elif len(params[key]) != num_psp:
                 warnings.warn('Length of list ' + key + ' inconsistent with num_psp')
 
