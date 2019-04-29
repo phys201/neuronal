@@ -100,9 +100,9 @@ import warnings
 #        pm.traceplot(trace)
 #    return trace
 
-def psp_log_likelihood(data, b_start, b, b_end, sigma, a, t_psp, tau_d, tau_r):
+def psp_model(data, b_start, b, b_end, sigma, a, t_psp, tau_d, tau_r):
     """
-    Calculates log likelihood for psp's with piecewise, linearly varying baseline
+    Calculates a PSP model with piecewise, linearly varying baselines
     
     Parameters
     ----------
@@ -127,15 +127,10 @@ def psp_log_likelihood(data, b_start, b, b_end, sigma, a, t_psp, tau_d, tau_r):
 
     Returns
     -------
-    log_likelihood : float
-        Log-likelihood of parameters
+    model : Numpy Array
+        PSP model of the given parameters
     """
-    num_psp = data.num_psp
-
-    t = np.array(data.data['T'])
-    v = np.array(data.data['V'])
-    
-    # needs to be vectorized
+    #needs to be vectorized
     model = (t <= t_psp[0]) * (b_start + (b[0] - b_start) / (t_psp[0] - t[0]) * (t - t[0])) +\
             np.sum([
                     (t >= t_psp[i]) * (a[i] * (np.exp(-(t-t_psp[i]) / tau_d[i]) - np.exp(-(t-t_psp[i]) / tau_r[i])) +\
@@ -143,7 +138,45 @@ def psp_log_likelihood(data, b_start, b, b_end, sigma, a, t_psp, tau_d, tau_r):
                     for i in range(num_psp - 1)], axis=0) +\
             (t >= t_psp[-1]) * (a[-1] * (np.exp(-(t-t_psp[-1]) / tau_d[-1]) - np.exp(-(t-t_psp[-1]) / tau_r[-1])) +\
             (b[-1] + (b_end - b[-1]) / (t[-1] - t_psp[-1]) * (t - t_psp[-1])))
-    
+    return model
+
+def psp_log_likelihood(data, b_start, b, b_end, sigma, a, t_psp, tau_d, tau_r):
+    """
+    Calculates log likelihood for psp's with piecewise, linearly varying baseline
+
+    Parameters
+    ----------
+    data : NeuronalData
+        Experimental data
+    b_start : float
+        Constant baseline before the first PSP
+    b : list float
+        Constant baselines
+    b_end : float
+        Constant baseline after the last PSP
+    sigma : float
+        Width of Gaussian noise
+    a : list of float
+        Constant related to the amplitudes of PSPs
+    t_psp : list of float
+        PSP start times
+    tau_d : list of float
+        Decay constants (PSP long-range behavior)
+    tau_r : list of float
+        Rise constants (PSP short-range behavior)
+
+    Returns
+    -------
+    log_likelihood : float
+        Log-likelihood of parameters
+    """
+    num_psp = data.num_psp
+
+    t = np.array(data.data['T'])
+    v = np.array(data.data['V'])
+
+    model = psp_model(data, b_start, b, b_end, sigma, a, t_psp, tau_d, tau_r)
+
     residual = ((v - model) / sigma) ** 2
     constant = 1 / np.sqrt(2 * np.pi * sigma ** 2)
     log_likelihood = (np.log(constant) - 0.5 * residual).sum()

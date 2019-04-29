@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pymc3 as pm
 
-def psp_model(data, summary):
+def psp_model_for_plot(data, summary):
     """
     Returns a psp_model for a given summary calculated from a pymc3 calculation 
 
@@ -70,7 +70,7 @@ def plot_fit(data, summary):
     """
     t = np.array(data.data['T'])
     v = np.array(data.data['V'])
-    model = psp_model(data, summary)
+    model = psp_model_for_plot(data, summary)
     
     fig = plt.figure()
     ax = fig.gca()
