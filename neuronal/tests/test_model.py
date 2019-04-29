@@ -1,6 +1,7 @@
 from unittest import TestCase
 from neuronal.io import get_example_data_file_path, NeuronalData
 from neuronal.model import *
+import warnings
 
 
 class TestModel(TestCase):
@@ -34,3 +35,36 @@ class TestModel(TestCase):
         self.assertAlmostEqual(sigma, 0.484764558519905)
         self.assertAlmostEqual(t_psp, 451.42953770165485)
 
+    def test_validate_params(self):
+        warnings.filterwarnings('error')
+        example_file_path = get_example_data_file_path('single_PSP_data.txt')
+        data = NeuronalData(example_file_path)
+        try:  # Should have no warnings
+            validate_params(data, {'sigma': 0.5, 'b_start': -30.39, 'b_end': -30.39, 'b': [-30.39], 'a': [0.3],
+                                   't_psp': [451.43], 'tau_d': [0.01], 'tau_r': [0.001]})
+        except Warning:
+            self.assertTrue(False)
+        try:  # Missing param
+            warn = False
+            validate_params(data, {'b_start': -30.39, 'b_end': -30.39, 'b': [-30.39], 'a': [0.3],
+                                   't_psp': [451.43], 'tau_d': [0.01], 'tau_r': [0.001]})
+        except Warning:
+            warn = True
+        finally:
+            self.assertTrue(warn)
+        try:  # Unexpected param
+            warn = False
+            validate_params(data, {'sigma': 0.5, 'b_start': -30.39, 'b_end': -30.39, 'b': [-30.39], 'a': [0.3],
+                                   't_psp': [451.43], 'tau_d': [0.01], 'tau_r': [0.001], 'foo': 0})
+        except Warning:
+            warn = True
+        finally:
+            self.assertTrue(warn)
+        try:  # Incorrect dimension
+            warn = False
+            validate_params(data, {'sigma': 0.5, 'b_start': -30.39, 'b_end': -30.39, 'b': [-30.39, 0], 'a': [0.3],
+                                   't_psp': [451.43], 'tau_d': [0.01], 'tau_r': [0.001]})
+        except Warning:
+            warn = True
+        finally:
+            self.assertTrue(warn)

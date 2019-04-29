@@ -143,6 +143,7 @@ def psp_model(data, b_start, b, b_end, sigma, a, t_psp, tau_d, tau_r):
             (b[-1] + (b_end - b[-1]) / (t[-1] - t_psp[-1]) * (t - t_psp[-1])))
     return model
 
+
 def psp_log_likelihood(data, b_start, b, b_end, sigma, a, t_psp, tau_d, tau_r):
     """
     Calculates log likelihood for psp's with piecewise, linearly varying baseline
