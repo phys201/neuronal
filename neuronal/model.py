@@ -42,7 +42,7 @@ def psp_model(data, b_start, b, b_end, a, t_psp, tau_d, tau_r):
     num_psp = data.num_psp
     t = np.array(data.data['T'])
     
-    #needs to be vectorized
+    # needs to be vectorized
     model = (t <= t_psp[0]) * (b_start + (b[0] - b_start) / (t_psp[0] - t[0]) * (t - t[0])) +\
             np.sum([
                     (t >= t_psp[i]) * (a[i] * (np.exp(-(t-t_psp[i]) / tau_d[i]) - np.exp(-(t-t_psp[i]) / tau_r[i])) +\
@@ -93,11 +93,12 @@ def psp_log_likelihood(data, b_start, b, b_end, sigma, a, t_psp, tau_d, tau_r):
     return log_likelihood
 
 
-def psp_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500, suppress_warnings=False):
+def psp_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500, suppress_warnings=False,
+            prior_ranges=()):
     """
     Uses pymc3 to calculate the trace for the PSP model. We assume a piecewise, linearly varying baseline.
 
-    Keys for initial_guess (for n PSPs)
+    Keys for initial_guess and prior_ranges (for n PSPs)
     -----------------------------------
     b_start, b_end : start and end baseline values
     b : (list) baseline values at each PSP start
@@ -123,6 +124,8 @@ def psp_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500, suppr
         Number of iterations to tune in pymc3 sampling, defaults to 500
     suppress_warnings : bool, optional
         Hide warnings if initial guess doesn't look right
+    prior_ranges : dict, optional
+        Dictionary of tuples denoting uniform prior ranges (start, end) for each parameter
 
     Returns
     -------
@@ -135,15 +138,40 @@ def psp_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500, suppr
     with pm.Model() as PSP_model:
         num_psp = data.num_psp
         t = data.data['T']
-        # Set parameter ranges
-        b_start = pm.Flat('b_start')
-        b = pm.Flat('b', shape=num_psp)
-        b_end = pm.Flat('b_end')
-        sigma = pm.HalfFlat('sigma')
-        a = pm.Flat('a', shape=num_psp)
-        t_psp = pm.Uniform('t_psp', lower=np.min(t), upper=np.max(t), shape=num_psp)
-        tau_d = pm.Uniform('tau_d', lower=0, upper=0.1, shape=num_psp)
-        tau_r = pm.Uniform('tau_r', lower=0, upper=0.1, shape=num_psp)
+
+        # Set priors
+        if 'b_start' in prior_ranges:
+            b_start = pm.Uniform('b_start', lower=prior_ranges['b_start'][0], upper=prior_ranges['b_start'][1])
+        else:
+            b_start = pm.Flat('b_start')
+        if 'b' in prior_ranges:
+            b = pm.Uniform('b', lower=prior_ranges['b'][0], upper=prior_ranges['b'][1], shape=num_psp)
+        else:
+            b = pm.Flat('b', shape=num_psp)
+        if 'b_end' in prior_ranges:
+            b_end = pm.Uniform('b_end', lower=prior_ranges['b_end'][0], upper=prior_ranges['b_end'][1])
+        else:
+            b_end = pm.Flat('b_end')
+        if 'sigma' in prior_ranges:
+            sigma = pm.Uniform('sigma', lower=prior_ranges['sigma'][0], upper=prior_ranges['sigma'][1], shape=num_psp)
+        else:
+            sigma = pm.HalfFlat('sigma')
+        if 'a' in prior_ranges:
+            a = pm.Uniform('a', lower=prior_ranges['a'][0], upper=prior_ranges['a'][1], shape=num_psp)
+        else:
+            a = pm.Flat('a', shape=num_psp)
+        if 't_psp' in prior_ranges:
+            t_psp = pm.Uniform('t_psp', lower=prior_ranges['t_psp'][0], upper=prior_ranges['t_psp'][1], shape=num_psp)
+        else:
+            t_psp = pm.Uniform('t_psp', lower=np.min(t), upper=np.max(t), shape=num_psp)
+        if 'tau_d' in prior_ranges:
+            tau_d = pm.Uniform('tau_d', lower=prior_ranges['tau_d'][0], upper=prior_ranges['tau_d'][1], shape=num_psp)
+        else:
+            tau_d = pm.Uniform('tau_d', lower=0, upper=0.1, shape=num_psp)
+        if 'tau_r' in prior_ranges:
+            tau_r = pm.Uniform('tau_r', lower=prior_ranges['tau_r'][0], upper=prior_ranges['tau_r'][1], shape=num_psp)
+        else:
+            tau_r = pm.Uniform('tau_r', lower=0, upper=0.1, shape=num_psp)
         
         log_likelihood = psp_log_likelihood(data, b_start, b, b_end, sigma, a, t_psp, tau_d, tau_r)
         pm.Potential('result', log_likelihood)

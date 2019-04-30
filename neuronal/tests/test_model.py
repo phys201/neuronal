@@ -4,8 +4,10 @@ from neuronal.model import *
 import warnings
 import pymc3 as pm
 
+
 class TestModel(TestCase):
     def test_model(self):
+        # TODO: test model with explicitly set parameters
         example_file_path = get_example_data_file_path('single_PSP_data.txt')
         data = NeuronalData(example_file_path)
         model = psp_model(data, -30.397341, [-30.397341], -30.397341, [0.290294],
