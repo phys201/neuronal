@@ -139,41 +139,33 @@ def psp_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500, suppr
         num_psp = data.num_psp
         t = data.data['T']
 
-        # Set priors
-        if 'b_start' in prior_ranges:
-            b_start = pm.Uniform('b_start', lower=prior_ranges['b_start'][0], upper=prior_ranges['b_start'][1])
-        else:
-            b_start = pm.Flat('b_start')
-        if 'b' in prior_ranges:
-            b = pm.Uniform('b', lower=prior_ranges['b'][0], upper=prior_ranges['b'][1], shape=num_psp)
-        else:
-            b = pm.Flat('b', shape=num_psp)
-        if 'b_end' in prior_ranges:
-            b_end = pm.Uniform('b_end', lower=prior_ranges['b_end'][0], upper=prior_ranges['b_end'][1])
-        else:
-            b_end = pm.Flat('b_end')
-        if 'sigma' in prior_ranges:
-            sigma = pm.Uniform('sigma', lower=prior_ranges['sigma'][0], upper=prior_ranges['sigma'][1], shape=num_psp)
-        else:
-            sigma = pm.HalfFlat('sigma')
-        if 'a' in prior_ranges:
-            a = pm.Uniform('a', lower=prior_ranges['a'][0], upper=prior_ranges['a'][1], shape=num_psp)
-        else:
-            a = pm.Flat('a', shape=num_psp)
-        if 't_psp' in prior_ranges:
-            t_psp = pm.Uniform('t_psp', lower=prior_ranges['t_psp'][0], upper=prior_ranges['t_psp'][1], shape=num_psp)
-        else:
-            t_psp = pm.Uniform('t_psp', lower=np.min(t), upper=np.max(t), shape=num_psp)
-        if 'tau_d' in prior_ranges:
-            tau_d = pm.Uniform('tau_d', lower=prior_ranges['tau_d'][0], upper=prior_ranges['tau_d'][1], shape=num_psp)
-        else:
-            tau_d = pm.Uniform('tau_d', lower=0, upper=0.1, shape=num_psp)
-        if 'tau_r' in prior_ranges:
-            tau_r = pm.Uniform('tau_r', lower=prior_ranges['tau_r'][0], upper=prior_ranges['tau_r'][1], shape=num_psp)
-        else:
-            tau_r = pm.Uniform('tau_r', lower=0, upper=0.1, shape=num_psp)
-        
-        log_likelihood = psp_log_likelihood(data, b_start, b, b_end, sigma, a, t_psp, tau_d, tau_r)
+        # Default priors
+        default_priors = {
+            'b_start': "pm.Flat('b_start')",
+            'b_end': "pm.Flat('b_end')",
+            'b': "pm.Flat('b', shape=num_psp)",
+            'sigma': "pm.HalfFlat('sigma')",
+            'a': "pm.Flat('a', shape=num_psp)",
+            't_psp': "pm.Uniform('t_psp', lower=np.min(t), upper=np.max(t), shape=num_psp)",
+            'tau_d': "pm.Uniform('tau_d', lower=0, upper=0.1, shape=num_psp)",
+            'tau_r': "pm.Uniform('tau_r', lower=0, upper=0.1, shape=num_psp)"
+        }
+        # Update with user-specified priors
+        priors = {}
+        for param in default_priors:
+            if param in prior_ranges:
+                if not suppress_warnings and param not in default_priors:
+                    warnings.warn('Unexpected prior specification: nonexistent parameter ' + str(param))
+                elif param in ['b_start', 'b_end', 'sigma']:
+                    priors[param] = pm.Uniform(param, lower=prior_ranges[param][0], upper=prior_ranges[param][1])
+                else:
+                    priors[param] = pm.Uniform(param, lower=prior_ranges[param][0],
+                                               upper=prior_ranges[param][1], shape=num_psp)
+            else:
+                priors[param] = eval(default_priors[param])
+
+        log_likelihood = psp_log_likelihood(data, priors['b_start'], priors['b'], priors['b_end'], priors['sigma'],
+                                            priors['a'], priors['t_psp'], priors['tau_d'], priors['tau_r'])
         pm.Potential('result', log_likelihood)
         trace=pm.sample(nsamples, cores=2, start=initial_guess, random_seed=seed, tune=tune)
 
