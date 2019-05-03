@@ -6,7 +6,31 @@ Authors: Amelia Paine, Han Sae Jung
 
 import numpy as np
 import matplotlib.pyplot as plt
-import pymc3 as pm
+
+
+def get_params_from_summary(data, summary):
+    """
+        Returns mean model parameters, grouped into numpy arrays when relevant
+
+        Parameters
+        ----------
+        data : NeuronalData
+            Imported data
+        summary : Pandas DataFrame
+            Summary of the result from pymc3 calculation
+    """
+    means = summary['mean']
+    num_psp = data.num_psp
+    b_start = means['b_start']
+    b_end = means['b_end']
+    sigma = means['sigma']
+    b = np.array([means['b__' + str(i)] for i in range(num_psp)])
+    a = np.array([means['a__' + str(i)] for i in range(num_psp)])
+    t_psp = np.array([means['t_psp__' + str(i)] for i in range(num_psp)])
+    tau_d = np.array([means['tau_d__' + str(i)] for i in range(num_psp)])
+    tau_r = np.array([means['tau_r__' + str(i)] for i in range(num_psp)])
+    return sigma, b_start, b_end, b, a, t_psp, tau_d, tau_r
+
 
 def psp_model_for_plot(data, summary):
     """
@@ -22,30 +46,7 @@ def psp_model_for_plot(data, summary):
     t = np.array(data.data['T'])
     v = np.array(data.data['V'])
     num_psp = data.num_psp
-    if num_psp == 1:
-        [b_start, b0, b_end, a0, sigma, t_psp0, tau_d0, tau_r0] = summary['mean']
-        t_psp = np.array([t_psp0])
-        b = np.array([b0])
-        a = np.array([a0])
-        tau_d = np.array([tau_d0])
-        tau_r = np.array([tau_r0])
-        
-    elif num_psp == 2:
-        [b_start, b0, b1, b_end, a0, a1, sigma, t_psp0, t_psp1, tau_d0, tau_d1, tau_r0, tau_r1] = summary['mean']
-        t_psp = np.array([t_psp0, t_psp1])
-        b = np.array([b0, b1])
-        a = np.array([a0, a1])
-        tau_d = np.array([tau_d0, tau_d1])
-        tau_r = np.array([tau_r0, tau_r1])
-
-    elif num_psp == 3:
-        [b_start, b0, b1, b2, b_end, a0, a1, a2, sigma, 
-         t_psp0, t_psp1, t_psp2, tau_d0, tau_d1, tau_d2, tau_r0, tau_r1, tau_r2] = summary['mean']
-        t_psp = np.array([t_psp0, t_psp1, t_psp2])
-        b = np.array([b0, b1, b2])
-        a = np.array([a0, a1, a2])
-        tau_d = np.array([tau_d0, tau_d1, tau_d2])
-        tau_r = np.array([tau_r0, tau_r1, tau_r2])
+    sigma, b_start, b_end, b, a, t_psp, tau_d, tau_r = get_params_from_summary(data, summary)
         
     model = (t <= t_psp[0]) * (b_start + (b[0] - b_start) / (t_psp[0] - t[0]) * (t - t[0])) +\
             np.sum([

@@ -26,4 +26,4 @@ class TestPlot(TestCase):
         self.assertTrue(isinstance(ax, matplotlib.axes._base._AxesBase))
         self.assertTrue(len(model) == 942)
         self.assertAlmostEqual(model[0], -30.39624270830434)
-        self.assertAlmostEqual(model[-1], -30.38553425456716)
+        self.assertAlmostEqual(model[-1], -30.367433029648684)
