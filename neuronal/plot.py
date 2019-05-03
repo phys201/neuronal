@@ -69,6 +69,8 @@ def plot_fit(data, summary, show_plot=True):
         Imported data
     summary : Pandas DataFrame
         Summary of the result from pymc3 calculation
+    show_plot : bool
+        If True, function will call plt.show() to display plot
     """
     t = np.array(data.data['T'])
     v = np.array(data.data['V'])

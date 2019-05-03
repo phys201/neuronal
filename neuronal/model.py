@@ -45,10 +45,10 @@ def psp_model(data, b_start, b, b_end, a, t_psp, tau_d, tau_r):
     # needs to be vectorized
     model = (t <= t_psp[0]) * (b_start + (b[0] - b_start) / (t_psp[0] - t[0]) * (t - t[0])) +\
             np.sum([
-                    (t >= t_psp[i]) * (a[i] * (np.exp(-(t-t_psp[i]) / tau_d[i]) - np.exp(-(t-t_psp[i]) / tau_r[i])) +\
+                    (t >= t_psp[i]) * (a[i] * (np.exp(-(t-t_psp[i]) / tau_d[i]) - np.exp(-(t-t_psp[i]) / tau_r[i])) +
                     (t <= t_psp[i+1]) * (b[i] + (b[i+1] - b[i]) / (t_psp[i+1] - t_psp[i]) * (t - t_psp[i])))
                     for i in range(num_psp - 1)], axis=0) +\
-            (t >= t_psp[-1]) * (a[-1] * (np.exp(-(t-t_psp[-1]) / tau_d[-1]) - np.exp(-(t-t_psp[-1]) / tau_r[-1])) +\
+            (t >= t_psp[-1]) * (a[-1] * (np.exp(-(t-t_psp[-1]) / tau_d[-1]) - np.exp(-(t-t_psp[-1]) / tau_r[-1])) +
             (b[-1] + (b_end - b[-1]) / (t[-1] - t_psp[-1]) * (t - t_psp[-1])))
     return model
 
@@ -167,7 +167,7 @@ def psp_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500, suppr
         log_likelihood = psp_log_likelihood(data, priors['b_start'], priors['b'], priors['b_end'], priors['sigma'],
                                             priors['a'], priors['t_psp'], priors['tau_d'], priors['tau_r'])
         pm.Potential('result', log_likelihood)
-        trace=pm.sample(nsamples, cores=2, start=initial_guess, random_seed=seed, tune=tune)
+        trace = pm.sample(nsamples, cores=2, start=initial_guess, random_seed=seed, tune=tune)
 
     if plot:
         pm.traceplot(trace)
