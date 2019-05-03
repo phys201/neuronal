@@ -25,5 +25,5 @@ class TestPlot(TestCase):
         ax = plot_fit(data, summary, show_plot=False)
         self.assertTrue(isinstance(ax, matplotlib.axes._base._AxesBase))
         self.assertTrue(len(model) == 942)
-        self.assertAlmostEqual(model[0], -30.411777684553478)
-        self.assertAlmostEqual(model[-1], -30.407399100212388)
+        self.assertAlmostEqual(model[0], -30.39624270830434)
+        self.assertAlmostEqual(model[-1], -30.38553425456716)
