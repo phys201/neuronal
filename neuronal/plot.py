@@ -6,6 +6,7 @@ Authors: Amelia Paine, Han Sae Jung
 
 import numpy as np
 import matplotlib.pyplot as plt
+from .model import psp_model
 
 
 def get_params_from_summary(data, summary):
@@ -18,44 +19,29 @@ def get_params_from_summary(data, summary):
             Imported data
         summary : Pandas DataFrame
             Summary of the result from pymc3 calculation
+
+        Returns
+        -------
+        sigma : float
+        b_start : float
+        b_end : float
+        b : list of float
+        a : list of float
+        t_psp : list of float
+        tau_d : list of float
+        tau_r : list of float
     """
     means = summary['mean']
     num_psp = data.num_psp
     b_start = means['b_start']
     b_end = means['b_end']
     sigma = means['sigma']
-    b = np.array([means['b__' + str(i)] for i in range(num_psp)])
-    a = np.array([means['a__' + str(i)] for i in range(num_psp)])
-    t_psp = np.array([means['t_psp__' + str(i)] for i in range(num_psp)])
-    tau_d = np.array([means['tau_d__' + str(i)] for i in range(num_psp)])
-    tau_r = np.array([means['tau_r__' + str(i)] for i in range(num_psp)])
+    b = [means['b__' + str(i)] for i in range(num_psp)]
+    a = [means['a__' + str(i)] for i in range(num_psp)]
+    t_psp = [means['t_psp__' + str(i)] for i in range(num_psp)]
+    tau_d = [means['tau_d__' + str(i)] for i in range(num_psp)]
+    tau_r = [means['tau_r__' + str(i)] for i in range(num_psp)]
     return sigma, b_start, b_end, b, a, t_psp, tau_d, tau_r
-
-
-def psp_model_for_plot(data, summary):
-    """
-    Returns a psp_model for a given summary calculated from a pymc3 calculation 
-
-    Parameters
-    ----------
-    data : NeuronalData
-        Imported data
-    summary : Pandas DataFrame
-        Summary of the result from pymc3 calculation
-    """
-    t = np.array(data.data['T'])
-    v = np.array(data.data['V'])
-    num_psp = data.num_psp
-    sigma, b_start, b_end, b, a, t_psp, tau_d, tau_r = get_params_from_summary(data, summary)
-        
-    model = (t <= t_psp[0]) * (b_start + (b[0] - b_start) / (t_psp[0] - t[0]) * (t - t[0])) +\
-            np.sum([
-                    (t >= t_psp[i]) * (a[i] * (np.exp(-(t-t_psp[i]) / tau_d[i]) - np.exp(-(t-t_psp[i]) / tau_r[i])) +\
-                    (t <= t_psp[i+1]) * (b[i] + (b[i+1] - b[i]) / (t_psp[i+1] - t_psp[i]) * (t - t_psp[i])))
-                    for i in range(num_psp - 1)], axis=0) +\
-            (t >= t_psp[-1]) * (a[-1] * (np.exp(-(t-t_psp[-1]) / tau_d[-1]) - np.exp(-(t-t_psp[-1]) / tau_r[-1])) +\
-            (b[-1] + (b_end - b[-1]) / (t[-1] - t_psp[-1]) * (t - t_psp[-1])))
-    return model
 
 
 def plot_fit(data, summary, show_plot=True):
@@ -69,13 +55,18 @@ def plot_fit(data, summary, show_plot=True):
         Imported data
     summary : Pandas DataFrame
         Summary of the result from pymc3 calculation
-    show_plot : bool
+    show_plot : bool, optional
         If True, function will call plt.show() to display plot
+
+    Returns
+    -------
+    ax : matplotlib.axes._subplots.AxesSubplot
+        Axes of plot
     """
     t = np.array(data.data['T'])
     v = np.array(data.data['V'])
-    model = psp_model_for_plot(data, summary)
-    
+    sigma, b_start, b_end, b, a, t_psp, tau_d, tau_r = get_params_from_summary(data, summary)
+    model = psp_model(data, b_start, b, b_end, a, t_psp, tau_d, tau_r)
     fig = plt.figure()
     ax = fig.gca()
     ax.plot(t, v)
