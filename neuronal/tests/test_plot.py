@@ -21,9 +21,5 @@ class TestPlot(TestCase):
         }
         sample = psp_fit(data, 5, initial_guess, seed=42, tune=10, suppress_warnings=True)
         summary = pm.summary(sample)
-        model = psp_model_for_plot(data, summary)
         ax = plot_fit(data, summary, show_plot=False)
         self.assertTrue(isinstance(ax, matplotlib.axes._base._AxesBase))
-        self.assertTrue(len(model) == 942)
-        self.assertAlmostEqual(model[0], -30.39624270830434)
-        self.assertAlmostEqual(model[-1], -30.367433029648684)
