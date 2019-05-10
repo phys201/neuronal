@@ -13,21 +13,51 @@ class NeuronalData:
     """
     An object to hold imported neuronal data and metadata
     """
-    def __init__(self, data_file, num_psp=1):
+    def __init__(self, data_source, num_psp=1):
         """
         Initialize NeuronalData object
 
-        Data should be space-separated values. First row is time (in seconds) and second row is signal (in millivolts).
+        Data file should be space-separated values. First row is time (in seconds) and second row is signal
+        (in millivolts).
+
+        If data is provided as a DataFrame, it should have columns 'T' and 'V'.
 
         Parameters
         ----------
-        data_file : str
-            path to correctly formatted data
+        data_source : str or pandas.DataFrame
+            path to correctly formatted data (if string)
+            DataFrame containing voltage vs. time data
         num_psp : int, optional
             number of PSPs in data
         """
-        self.data = load_data(data_file)
+        if isinstance(data_source, str):
+            self.data = load_data(data_source)
+        elif isinstance(data_source, pd.DataFrame):
+            if (len(data_source.columns.values) == 2
+                    and 'T' in data_source.columns.values and 'V' in data_source.columns.values):
+                self.data = data_source
+            else:
+                raise Exception("Source DataFrame columns are incorrect (should be 'T' and 'V')")
+        else:
+            raise Exception('Initialization error. data_source is the wrong type (should be str or pandas DataFrame) : '
+                            + str(type(data_source)))
         self.num_psp = num_psp
+
+    def decimate(self, n):
+        """
+        Returns a NeuronalData object with every nth data point
+
+        Parameters
+        ----------
+        n : int
+            factor by which to reduce number of data points
+
+        Returns
+        -------
+        NeuronalData
+            New NeuronalData object containing decimated data
+        """
+        return NeuronalData(self.data.iloc[::n, :], num_psp=self.num_psp)
 
 
 def get_example_data_file_path(filename, data_dir='data'):
