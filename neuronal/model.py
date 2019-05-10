@@ -4,8 +4,10 @@ Uses a generative model to fit parameters to neuronal data.
 Authors: Amelia Paine, Han Sae Jung
 """
 
+from .io import NeuronalData
 import pymc3 as pm
 import numpy as np
+import pandas as pd
 import warnings
 
 
@@ -51,6 +53,54 @@ def psp_model(data, b_start, b, b_end, a, t_psp, tau_d, tau_r):
             (t >= t_psp[-1]) * (a[-1] * (np.exp(-(t-t_psp[-1]) / tau_d[-1]) - np.exp(-(t-t_psp[-1]) / tau_r[-1])) +
             (b[-1] + (b_end - b[-1]) / (t[-1] - t_psp[-1]) * (t - t_psp[-1])))
     return model
+
+
+def simulate_psp_data(sigma, b_start, b, b_end, a, t_psp, tau_d, tau_r, t_range, step):
+    """
+        Simulates experimental data with the given parameters and Gaussian noise
+
+        Parameters
+        ----------
+        sigma : float
+            Width of Gaussian noise
+        b_start : float
+            Constant baseline before the first PSP
+        b : list float
+            Constant baselines
+        b_end : float
+            Constant baseline after the last PSP
+        sigma : float
+            Width of Gaussian noise
+        a : list of float
+            Constant related to the amplitudes of PSPs
+        t_psp : list of float
+            PSP start times
+        tau_d : list of float
+            Decay constants (PSP long-range behavior)
+        tau_r : list of float
+            Rise constants (PSP short-range behavior)
+        t_range : tuple
+            Desired time range (start, end)
+        step : float
+            Desired time step
+
+        Returns
+        -------
+        simulated_data : pandas.DataFrame
+            DataFrame containing time ('T') vs. voltage ('V') simulated data
+        """
+    t_vals = np.arange(t_range[0], t_range[1], step)
+    dummy_data = NeuronalData(pd.DataFrame({
+        'T': t_vals,
+        'V': t_vals
+    }), num_psp=len(t_psp))
+    model = psp_model(dummy_data, b_start, b, b_end, a, t_psp, tau_d, tau_r)
+    noise = np.random.normal(0, sigma, len(model))
+    simulated_data = NeuronalData(pd.DataFrame({
+        'T': t_vals,
+        'V': model + noise
+    }), num_psp=len(t_psp))
+    return simulated_data
 
 
 def psp_log_likelihood(data, b_start, b, b_end, sigma, a, t_psp, tau_d, tau_r):
