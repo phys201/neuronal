@@ -8,10 +8,12 @@ from .io import NeuronalData
 import pymc3 as pm
 import numpy as np
 import pandas as pd
+import theano
+import theano.tensor as tt
 import warnings
 
 
-def psp_model(data, b_start, b, b_end, a, t_psp, tau_d, tau_r):
+def psp_model(data, b, a, t_psp, tau_d, tau_r, start_index=0, end_index=-1):
     """
     Calculates a PSP model with piecewise, linearly varying baselines
     
@@ -38,19 +40,36 @@ def psp_model(data, b_start, b, b_end, a, t_psp, tau_d, tau_r):
 
     Returns
     -------
-    model : Numpy Array
+    model : theano something
         PSP model of the given parameters
     """
+    eps = 1e-5
     num_psp = data.num_psp
-    t = np.array(data.data['T'])
+    t = np.array(data.data['T'][start_index:end_index])
 
-    model = (t <= t_psp[0]) * (b_start + (b[0] - b_start) / (t_psp[0] - t[0]) * (t - t[0])) +\
-            np.sum([
-                    (t >= t_psp[i]) * (a[i] * (np.exp(-(t-t_psp[i]) / tau_d[i]) - np.exp(-(t-t_psp[i]) / tau_r[i])) +
-                    (t <= t_psp[i+1]) * (b[i] + (b[i+1] - b[i]) / (t_psp[i+1] - t_psp[i]) * (t - t_psp[i])))
-                    for i in range(num_psp - 1)], axis=0) +\
-            (t >= t_psp[-1]) * (a[-1] * (np.exp(-(t-t_psp[-1]) / tau_d[-1]) - np.exp(-(t-t_psp[-1]) / tau_r[-1])) +
-            (b[-1] + (b_end - b[-1]) / (t[-1] - t_psp[-1]) * (t - t_psp[-1])))
+    # needs to be vectorized
+    t_resize = theano.shared(np.tile(t, (num_psp + 2, 1)).astype("float64"))
+    t_psp_resize = tt.tile(t_psp, (len(t), 1)).T
+
+    t_psp_next = t_psp + tt.concatenate([tt.extra_ops.diff(t_psp), theano.shared(np.array([eps]).astype("float64"))],
+                                        axis=0)
+    t_psp_next_resize = tt.tile(t_psp_next, (len(t), 1)).T
+
+    a_resize = tt.tile(a, (len(t), 1)).T
+    b_resize = tt.tile(b, (len(t), 1)).T
+    tau_d_resize = tt.tile(tau_d, (len(t), 1)).T
+    tau_r_resize = tt.tile(tau_r, (len(t), 1)).T
+
+    b_next = b + tt.concatenate([tt.extra_ops.diff(b), theano.shared(np.array([eps]).astype("float64"))], axis=0)
+    b_next_resize = tt.tile(b_next, (len(t), 1)).T
+
+    model = tt.sum((t_resize >= t_psp_resize) * (a_resize * (
+                tt.exp((t_resize >= t_psp_resize) * -(t_resize - t_psp_resize) / tau_d_resize) - tt.exp(
+            (t_resize >= t_psp_resize) * -(t_resize - t_psp_resize) / tau_r_resize)) +
+                                                 (t_resize < t_psp_next_resize) * (
+                                                             b_resize + (b_next_resize - b_resize) / (
+                                                                 t_psp_next_resize - t_psp_resize) * (
+                                                                         t_resize - t_psp_resize))), axis=0)
     return model
 
 
