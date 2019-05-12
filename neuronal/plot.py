@@ -4,9 +4,9 @@ Convenient functions for plotting data and best fit.
 Authors: Amelia Paine, Han Sae Jung
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
 from .model import psp_model
+from .analysis import *
 
 
 def get_params_from_summary(data, summary):
@@ -44,17 +44,17 @@ def get_params_from_summary(data, summary):
     return sigma, b_start, b_end, b, a, t_psp, tau_d, tau_r
 
 
-def plot_fit(data, summary, show_plot=True):
+def plot_fit(data, df, show_plot=True):
     """
-    Plots the data and the best fit from psp_model using a summary calculated from pymc3 and
+    Plots the data and the best fit from psp_model using the pymc3 trace and
     returns 'matplotlib.axes._subplots.AxesSubplot' object
 
     Parameters
     ----------
     data : NeuronalData
         Imported data
-    summary : Pandas DataFrame
-        Summary of the result from pymc3 calculation
+    df : pandas.DataFrame
+        Dataframe containing the results from pymc3 calculation
     show_plot : bool, optional
         If True, function will call plt.show() to display plot
 
@@ -63,9 +63,10 @@ def plot_fit(data, summary, show_plot=True):
     ax : matplotlib.axes._subplots.AxesSubplot
         Axes of plot
     """
+    quantile_df = get_quantiles(df)
     t = np.array(data.data['T'])
     v = np.array(data.data['V'])
-    sigma, b_start, b_end, b, a, t_psp, tau_d, tau_r = get_params_from_summary(data, summary)
+    sigma, b_start, b_end, b, a, t_psp, tau_d, tau_r = get_params_from_df(data, quantile_df)
     model = psp_model(data, b_start, b, b_end, a, t_psp, tau_d, tau_r)
     fig = plt.figure()
     ax = fig.gca()
