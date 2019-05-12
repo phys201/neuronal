@@ -43,8 +43,7 @@ def psp_model(data, b_start, b, b_end, a, t_psp, tau_d, tau_r):
     """
     num_psp = data.num_psp
     t = np.array(data.data['T'])
-    
-    # needs to be vectorized
+
     model = (t <= t_psp[0]) * (b_start + (b[0] - b_start) / (t_psp[0] - t[0]) * (t - t[0])) +\
             np.sum([
                     (t >= t_psp[i]) * (a[i] * (np.exp(-(t-t_psp[i]) / tau_d[i]) - np.exp(-(t-t_psp[i]) / tau_r[i])) +
@@ -143,7 +142,7 @@ def psp_log_likelihood(data, b_start, b, b_end, sigma, a, t_psp, tau_d, tau_r):
     return log_likelihood
 
 
-def psp_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500, suppress_warnings=False,
+def psp_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500, cores=1, suppress_warnings=False,
             prior_ranges=()):
     """
     Uses pymc3 to calculate the trace for the PSP model. We assume a piecewise, linearly varying baseline.
@@ -172,6 +171,8 @@ def psp_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500, suppr
         Random seed for pymc3 sampling, defaults to None
     tune : int, optional
         Number of iterations to tune in pymc3 sampling, defaults to 500
+    cores : int, optional
+        Number of cores for pymc3 parallelization
     suppress_warnings : bool, optional
         Hide warnings if initial guess doesn't look right
     prior_ranges : dict, optional
@@ -179,8 +180,8 @@ def psp_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500, suppr
 
     Returns
     -------
-    trace : pymc3.backends.base.MultiTrace
-        A MultiTrace object containing the samples
+    df : pandas.DataFrame
+        Dataframe containing the trace
     """
     if not suppress_warnings:
         validate_params(data, initial_guess)
@@ -217,11 +218,12 @@ def psp_fit(data, nsamples, initial_guess, plot=True, seed=None, tune=500, suppr
         log_likelihood = psp_log_likelihood(data, priors['b_start'], priors['b'], priors['b_end'], priors['sigma'],
                                             priors['a'], priors['t_psp'], priors['tau_d'], priors['tau_r'])
         pm.Potential('result', log_likelihood)
-        trace = pm.sample(nsamples, cores=2, start=initial_guess, random_seed=seed, tune=tune)
+        trace = pm.sample(nsamples, cores=cores, start=initial_guess, random_seed=seed, tune=tune)
 
     if plot:
         pm.traceplot(trace)
-    return trace
+    df = pm.trace_to_dataframe(trace)
+    return df
 
 
 def validate_params(data, params):
