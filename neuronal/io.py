@@ -59,6 +59,28 @@ class NeuronalData:
         """
         return NeuronalData(self.data.iloc[::n, :], num_psp=self.num_psp)
 
+    def randomly_reduce(self, n, replace=False, seed=None):
+        """
+        Returns a NeuronalData object with number of data points randomly reduced by a factor of n.
+        Behavior is similar to decimate except the points are random.
+
+        Parameters
+        ----------
+        n : float
+            Factor by which to reduce number of data points
+        replace : bool, optional
+            Sample with replacement
+        seed : int, optional
+            Seed for random number generator
+
+        Returns
+        -------
+        NeuronalData
+            New NeuronalData object containing randomly sampled data points
+        """
+        df = self.data.sample(frac=1.0/n, replace=replace, random_state=seed)
+        return NeuronalData(df, num_psp=self.num_psp)
+
 
 def get_example_data_file_path(filename, data_dir='data'):
     """
