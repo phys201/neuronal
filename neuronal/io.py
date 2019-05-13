@@ -79,7 +79,7 @@ class NeuronalData:
             New NeuronalData object containing randomly sampled data points
         """
         df = self.data.sample(frac=1.0/n, replace=replace, random_state=seed)
-        return NeuronalData(df, num_psp=self.num_psp)
+        return NeuronalData(df.sort_values(by=['T']), num_psp=self.num_psp)
 
 
 def get_example_data_file_path(filename, data_dir='data'):
