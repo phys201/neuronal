@@ -44,37 +44,4 @@ def get_params_from_summary(data, summary):
     return sigma, b_start, b_end, b, a, t_psp, tau_d, tau_r
 
 
-def plot_fit(data, df, show_plot=True):
-    """
-    Plots the data and the best fit from psp_model using the pymc3 trace and
-    returns 'matplotlib.axes._subplots.AxesSubplot' object
 
-    Parameters
-    ----------
-    data : NeuronalData
-        Imported data
-    df : pandas.DataFrame
-        Dataframe containing the results from pymc3 calculation
-    show_plot : bool, optional
-        If True, function will call plt.show() to display plot
-
-    Returns
-    -------
-    ax : matplotlib.axes._subplots.AxesSubplot
-        Axes of plot
-    """
-    quantile_df = get_quantiles(df)
-    t = np.array(data.data['T'])
-    v = np.array(data.data['V'])
-    sigma, b_start, b_end, b, a, t_psp, tau_d, tau_r = get_params_from_df(data, quantile_df)
-    model = psp_model(data, b_start, b, b_end, a, t_psp, tau_d, tau_r)
-    fig = plt.figure()
-    ax = fig.gca()
-    ax.plot(t, v)
-    ax.plot(t, model, c='r')
-    ax.set_title('Estimated Fit from the Model')
-    ax.set_xlabel('Time (s)')
-    ax.set_ylabel('Voltage (mV)')
-    if show_plot:
-        plt.show()
-    return ax
