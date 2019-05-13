@@ -44,12 +44,14 @@ def psp_model(data, b_start, b, b_end, a, t_psp, tau_d, tau_r):
     num_psp = data.num_psp
     t = np.array(data.data['T'])
 
-    model = (t <= t_psp[0]) * (b_start + (b[0] - b_start) / (t_psp[0] - t[0]) * (t - t[0])) +\
+    model = (t < t_psp[0]) * (b_start + (b[0] - b_start) / (t_psp[0] - t[0]) * (t - t[0])) +\
             np.sum([
-                    (t >= t_psp[i]) * (a[i] * (np.exp(-(t-t_psp[i]) / tau_d[i]) - np.exp(-(t-t_psp[i]) / tau_r[i])) +
-                    (t <= t_psp[i+1]) * (b[i] + (b[i+1] - b[i]) / (t_psp[i+1] - t_psp[i]) * (t - t_psp[i])))
+                    (t >= t_psp[i]) * (a[i] * (np.exp((t>=t_psp[i])*-(t-t_psp[i]) / tau_d[i]) -\
+                                               np.exp((t>=t_psp[i])*-(t-t_psp[i]) / tau_r[i])) +\
+                    (t < t_psp[i+1]) * (b[i] + (b[i+1] - b[i]) / (t_psp[i+1] - t_psp[i]) * (t - t_psp[i])))
                     for i in range(num_psp - 1)], axis=0) +\
-            (t >= t_psp[-1]) * (a[-1] * (np.exp(-(t-t_psp[-1]) / tau_d[-1]) - np.exp(-(t-t_psp[-1]) / tau_r[-1])) +
+            (t >= t_psp[-1]) * (a[-1] * (np.exp((t>=t_psp[-1])*-(t-t_psp[-1]) / tau_d[-1]) -\
+                                         np.exp((t>=t_psp[-1])*-(t-t_psp[-1]) / tau_r[-1])) +\
             (b[-1] + (b_end - b[-1]) / (t[-1] - t_psp[-1]) * (t - t_psp[-1])))
     return model
 
