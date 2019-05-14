@@ -80,7 +80,7 @@ def simulate_psp_data(sigma, b_start, b, b_end, a, t_psp, tau_d, tau_r, t_range,
             Decay constants (PSP long-range behavior)
         tau_r : list of float
             Rise constants (PSP short-range behavior)
-        t_range : tuple
+        t_range : tuple of float
             Desired time range (start, end)
         step : float
             Desired time step
