@@ -1,6 +1,7 @@
 from unittest import TestCase
 from neuronal.io import get_example_data_file_path, NeuronalData
 from neuronal.model import *
+from neuronal.analysis import *
 import warnings
 import pymc3 as pm
 
@@ -32,11 +33,11 @@ class TestModel(TestCase):
                          'tau_r': [0.001]
                         }
         sample = psp_fit(data, 5, initial_guess, seed=42, tune=10, suppress_warnings=True)
-        summary = pm.summary(sample)['mean']
-        b_start = summary['b_start']
-        a = summary['a__0']
-        sigma = summary['sigma']
-        t_psp = summary['t_psp__0']
+        self.assertTrue(len(sample['b_start']) == 5)
+        b_start = np.mean(sample['b_start'])
+        a = np.mean(sample['a__0'])
+        sigma = np.mean(sample['sigma'])
+        t_psp = np.mean(sample['t_psp__0'])
         self.assertAlmostEqual(b_start, -30.39624270830434)
         self.assertAlmostEqual(a, 0.30565798385998183)
         self.assertAlmostEqual(sigma, 0.4352468747178174)
@@ -56,9 +57,8 @@ class TestModel(TestCase):
         sample = psp_fit(data, 5, initial_guess, seed=42, tune=10, prior_ranges={'foo': 0,
                                                                                  'b_start': (-30, -20),
                                                                                  'b': (-30, -20)})
-        summary = pm.summary(sample)['mean']
-        b_start = summary['b_start']
-        b = summary['b__0']
+        b_start = np.mean(sample['b_start'])
+        b = np.mean(sample['b'])
         self.assertTrue(-20 > b_start > -30)
         self.assertTrue(-20 > b > -30)
 
