@@ -78,7 +78,7 @@ class TestModel(TestCase):
 
     def test_simulated_data(self):
         np.random.seed(42)
-        sim = simulate_psp_data(1., 0., [0.], 0., [0.5], [1.], [0.01], [0.001], (0., 5), 0.1)
+        sim = simulate_psp_data(1., 0., [0.], 0., [0.5], [1.], [0.01], [0.001], (0., 5), 0.1).data
         self.assertTrue(len(sim) == 50)
         self.assertAlmostEqual(sim['T'][0], 0.)
         self.assertAlmostEqual(sim['T'][49], 4.9)
