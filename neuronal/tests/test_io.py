@@ -1,6 +1,7 @@
 from unittest import TestCase
 import os
 import pandas as pd
+import numpy as np
 from neuronal.io import get_example_data_file_path, NeuronalData
 
 
@@ -25,6 +26,16 @@ class TestIo(TestCase):
         self.assertTrue(isinstance(decimated, NeuronalData))
         self.assertTrue(len(decimated.data['T']) == 95)
         self.assertAlmostEqual(decimated.data['T'][0], 451.4001062134890390)
+
+    def test_randomly_reduce(self):
+        example_file_path = get_example_data_file_path('single_PSP_data.txt')
+        data = NeuronalData(example_file_path)
+        np.random.seed(42)
+        rand_reduced = data.randomly_reduce(10).data
+        self.assertTrue(len(rand_reduced) == 94)
+        self.assertTrue(list(rand_reduced.index.values)[0] == 23)
+        self.assertAlmostEqual(rand_reduced['T'].values[0], 451.4025491237387)
+        self.assertAlmostEqual(rand_reduced['V'].values[0], -30.4366668065389)
 
     def test_num_psp(self):
         example_file_path = get_example_data_file_path('two_PSP_data.txt')
