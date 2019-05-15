@@ -41,6 +41,6 @@ class TestAnalysis(TestCase):
         self.assertRaises(KeyError, calculate_peak_amplitudes, 1, sample, np.max(data.data['T']), data.num_psp)
 
     def test_report(self):
-        value_minus, value_mid, value_plus = report_best_fit(get_quantiles(sample), 'b', print_fit=True)
+        value_minus, value_mid, value_plus = report_best_fit(get_quantiles(sample), 'b__0', print_fit=True)
         self.assertAlmostEqual(value_minus, -30.46566738900276)
         self.assertAlmostEqual(value_mid, -30.398952468916747)
