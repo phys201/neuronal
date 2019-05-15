@@ -2,7 +2,7 @@
 *.pyc
 
 /dist/
-
+/.coverage
 \.ipynb_checkpoints/
 
 /*.egg-info
